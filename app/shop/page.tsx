@@ -1,156 +1,196 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
-import { Filter, ChevronDown, X } from "lucide-react"
+import { useState, useEffect, Suspense } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Filter, ChevronDown, X } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
-import ProductCard from "@/components/product-card"
-import Newsletter from "@/components/newsletter"
-import { products } from "@/lib/products"
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetClose,
+} from "@/components/ui/sheet";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import ProductCard from "@/components/product-card";
+import Newsletter from "@/components/newsletter";
+import { products } from "@/lib/products";
 
 // Define filter types
-type CategoryFilter = "all" | "perfumes" | "body-sprays" | "gift-sets" | "samples"
-type ScentFilter = "floral" | "woody" | "oriental" | "fresh"
-type PriceFilter = "under-50" | "50-100" | "100-150" | "over-150"
-type SortOption = "featured" | "newest" | "price-low" | "price-high"
+type CategoryFilter =
+  | "all"
+  | "perfumes"
+  | "body-sprays"
+  | "gift-sets"
+  | "samples";
+type ScentFilter = "floral" | "woody" | "oriental" | "fresh";
+type PriceFilter = "under-50" | "50-100" | "100-150" | "over-150";
+type SortOption = "featured" | "newest" | "price-low" | "price-high";
 
-export default function ShopPage() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
+function ShopPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   // State for filters
-  const [categoryFilters, setCategoryFilters] = useState<CategoryFilter[]>([])
-  const [scentFilters, setScentFilters] = useState<ScentFilter[]>([])
-  const [priceFilters, setPriceFilters] = useState<PriceFilter[]>([])
-  const [sortOption, setSortOption] = useState<SortOption>("featured")
-  const [filteredProducts, setFilteredProducts] = useState(products)
-  const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [categoryFilters, setCategoryFilters] = useState<CategoryFilter[]>([]);
+  const [scentFilters, setScentFilters] = useState<ScentFilter[]>([]);
+  const [priceFilters, setPriceFilters] = useState<PriceFilter[]>([]);
+  const [sortOption, setSortOption] = useState<SortOption>("featured");
+  const [filteredProducts, setFilteredProducts] = useState(products);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   // Initialize filters from URL parameters
   useEffect(() => {
-    const category = searchParams.get("category")
+    const category = searchParams.get("category");
     if (category) {
-      setCategoryFilters([category as CategoryFilter])
+      setCategoryFilters([category as CategoryFilter]);
     }
 
-    const scent = searchParams.get("scent")
+    const scent = searchParams.get("scent");
     if (scent) {
-      setScentFilters([scent as ScentFilter])
+      setScentFilters([scent as ScentFilter]);
     }
 
-    const price = searchParams.get("price")
+    const price = searchParams.get("price");
     if (price) {
-      setPriceFilters([price as PriceFilter])
+      setPriceFilters([price as PriceFilter]);
     }
 
-    const sort = searchParams.get("sort")
+    const sort = searchParams.get("sort");
     if (sort) {
-      setSortOption(sort as SortOption)
+      setSortOption(sort as SortOption);
     }
-  }, [searchParams])
+  }, [searchParams]);
 
   // Apply filters and sorting
   useEffect(() => {
-    let result = [...products]
+    let result = [...products];
 
     // Apply category filters
     if (categoryFilters.length > 0) {
       result = result.filter((product) => {
-        const category = product.category.toLowerCase()
+        const category = product.category.toLowerCase();
         return categoryFilters.some((filter) => {
-          if (filter === "all") return true
-          if (filter === "perfumes") return category.includes("perfume")
-          if (filter === "body-sprays") return category.includes("spray") || category.includes("mist")
-          if (filter === "gift-sets") return category.includes("gift") || category.includes("set")
-          if (filter === "samples") return category.includes("sample")
-          return false
-        })
-      })
+          if (filter === "all") return true;
+          if (filter === "perfumes") return category.includes("perfume");
+          if (filter === "body-sprays")
+            return category.includes("spray") || category.includes("mist");
+          if (filter === "gift-sets")
+            return category.includes("gift") || category.includes("set");
+          if (filter === "samples") return category.includes("sample");
+          return false;
+        });
+      });
     }
 
     // Apply scent filters
     if (scentFilters.length > 0) {
       result = result.filter((product) => {
-        const tags = product.tags || []
-        const fragranceFamily = product.fragranceFamily?.toLowerCase() || ""
+        const tags = product.tags || [];
+        const fragranceFamily = product.fragranceFamily?.toLowerCase() || "";
 
         return scentFilters.some((filter) => {
           if (filter === "floral") {
-            return tags.includes("floral") || fragranceFamily.includes("floral")
+            return (
+              tags.includes("floral") || fragranceFamily.includes("floral")
+            );
           }
           if (filter === "woody") {
-            return tags.includes("woody") || fragranceFamily.includes("woody")
+            return tags.includes("woody") || fragranceFamily.includes("woody");
           }
           if (filter === "oriental") {
-            return tags.includes("oriental") || fragranceFamily.includes("oriental")
+            return (
+              tags.includes("oriental") || fragranceFamily.includes("oriental")
+            );
           }
           if (filter === "fresh") {
-            return tags.includes("fresh") || fragranceFamily.includes("fresh") || fragranceFamily.includes("aquatic")
+            return (
+              tags.includes("fresh") ||
+              fragranceFamily.includes("fresh") ||
+              fragranceFamily.includes("aquatic")
+            );
           }
-          return false
-        })
-      })
+          return false;
+        });
+      });
     }
 
     // Apply price filters
     if (priceFilters.length > 0) {
       result = result.filter((product) => {
-        const price = product.price
+        const price = product.price;
         return priceFilters.some((filter) => {
-          if (filter === "under-50") return price < 50
-          if (filter === "50-100") return price >= 50 && price <= 100
-          if (filter === "100-150") return price > 100 && price <= 150
-          if (filter === "over-150") return price > 150
-          return false
-        })
-      })
+          if (filter === "under-50") return price < 50;
+          if (filter === "50-100") return price >= 50 && price <= 100;
+          if (filter === "100-150") return price > 100 && price <= 150;
+          if (filter === "over-150") return price > 150;
+          return false;
+        });
+      });
     }
 
     // Apply sorting
     if (sortOption === "newest") {
       // For demo purposes, we'll just reverse the array to simulate "newest"
-      result = [...result].reverse()
+      result = [...result].reverse();
     } else if (sortOption === "price-low") {
-      result = [...result].sort((a, b) => a.price - b.price)
+      result = [...result].sort((a, b) => a.price - b.price);
     } else if (sortOption === "price-high") {
-      result = [...result].sort((a, b) => b.price - a.price)
+      result = [...result].sort((a, b) => b.price - a.price);
     }
     // "featured" is the default order
 
-    setFilteredProducts(result)
-  }, [categoryFilters, scentFilters, priceFilters, sortOption])
+    setFilteredProducts(result);
+  }, [categoryFilters, scentFilters, priceFilters, sortOption]);
 
   // Toggle category filter
   const toggleCategoryFilter = (filter: CategoryFilter) => {
-    setCategoryFilters((prev) => (prev.includes(filter) ? prev.filter((f) => f !== filter) : [...prev, filter]))
-  }
+    setCategoryFilters((prev) =>
+      prev.includes(filter)
+        ? prev.filter((f) => f !== filter)
+        : [...prev, filter]
+    );
+  };
 
   // Toggle scent filter
   const toggleScentFilter = (filter: ScentFilter) => {
-    setScentFilters((prev) => (prev.includes(filter) ? prev.filter((f) => f !== filter) : [...prev, filter]))
-  }
+    setScentFilters((prev) =>
+      prev.includes(filter)
+        ? prev.filter((f) => f !== filter)
+        : [...prev, filter]
+    );
+  };
 
   // Toggle price filter
   const togglePriceFilter = (filter: PriceFilter) => {
-    setPriceFilters((prev) => (prev.includes(filter) ? prev.filter((f) => f !== filter) : [...prev, filter]))
-  }
+    setPriceFilters((prev) =>
+      prev.includes(filter)
+        ? prev.filter((f) => f !== filter)
+        : [...prev, filter]
+    );
+  };
 
   // Clear all filters
   const clearAllFilters = () => {
-    setCategoryFilters([])
-    setScentFilters([])
-    setPriceFilters([])
-    setSortOption("featured")
+    setCategoryFilters([]);
+    setScentFilters([]);
+    setPriceFilters([]);
+    setSortOption("featured");
 
     // Clear URL parameters
-    router.push("/shop")
-  }
+    router.push("/shop");
+  };
 
   // Filter components - used in both desktop and mobile
   const FilterComponents = () => (
@@ -293,14 +333,22 @@ export default function ShopPage() {
         </div>
       </div>
 
-      <Button variant="outline" size="sm" className="w-full md:w-auto" onClick={clearAllFilters}>
+      <Button
+        variant="outline"
+        size="sm"
+        className="w-full md:w-auto"
+        onClick={clearAllFilters}
+      >
         Clear All Filters
       </Button>
     </>
-  )
+  );
 
   // Check if any filters are active
-  const hasActiveFilters = categoryFilters.length > 0 || scentFilters.length > 0 || priceFilters.length > 0
+  const hasActiveFilters =
+    categoryFilters.length > 0 ||
+    scentFilters.length > 0 ||
+    priceFilters.length > 0;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -308,10 +356,13 @@ export default function ShopPage() {
         <section className="py-12 md:py-16 bg-neutral-50">
           <div className="container">
             <div className="flex flex-col items-center text-center mb-8 md:mb-12">
-              <h1 className="text-3xl md:text-4xl font-light tracking-tight mb-4">Shop All Products</h1>
+              <h1 className="text-3xl md:text-4xl font-light tracking-tight mb-4">
+                Shop All Products
+              </h1>
               <div className="w-20 h-px bg-neutral-300 mb-4" />
               <p className="text-neutral-600 max-w-2xl">
-                Explore our complete collection of exquisite fragrances, crafted with the finest ingredients
+                Explore our complete collection of exquisite fragrances, crafted
+                with the finest ingredients
               </p>
             </div>
 
@@ -319,19 +370,27 @@ export default function ShopPage() {
             <div className="w-full md:hidden mb-6">
               <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="outline" className="w-full flex items-center justify-between">
+                  <Button
+                    variant="outline"
+                    className="w-full flex items-center justify-between"
+                  >
                     <div className="flex items-center gap-2">
                       <Filter className="h-4 w-4" />
                       <span>Filters</span>
                     </div>
                     {hasActiveFilters && (
                       <span className="bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                        {categoryFilters.length + scentFilters.length + priceFilters.length}
+                        {categoryFilters.length +
+                          scentFilters.length +
+                          priceFilters.length}
                       </span>
                     )}
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-[300px] sm:w-[350px] overflow-y-auto">
+                <SheetContent
+                  side="left"
+                  className="w-[300px] sm:w-[350px] overflow-y-auto"
+                >
                   <SheetHeader className="mb-4">
                     <SheetTitle className="flex items-center gap-2">
                       <Filter className="h-4 w-4" />
@@ -342,7 +401,11 @@ export default function ShopPage() {
                     <FilterComponents />
                   </div>
                   <div className="mt-6 flex justify-between">
-                    <Button variant="outline" size="sm" onClick={clearAllFilters}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={clearAllFilters}
+                    >
                       Clear All
                     </Button>
                     <SheetClose asChild>
@@ -367,20 +430,30 @@ export default function ShopPage() {
               <div className="flex-1">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                   <p className="text-sm text-neutral-600">
-                    Showing {filteredProducts.length} of {products.length} products
+                    Showing {filteredProducts.length} of {products.length}{" "}
+                    products
                     {hasActiveFilters && " (filtered)"}
                   </p>
                   <div className="flex items-center gap-2 w-full sm:w-auto">
                     <span className="text-sm whitespace-nowrap">Sort by:</span>
-                    <Select value={sortOption} onValueChange={(value) => setSortOption(value as SortOption)}>
+                    <Select
+                      value={sortOption}
+                      onValueChange={(value) =>
+                        setSortOption(value as SortOption)
+                      }
+                    >
                       <SelectTrigger className="w-full sm:w-[180px]">
                         <SelectValue placeholder="Sort by" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="featured">Featured</SelectItem>
                         <SelectItem value="newest">Newest</SelectItem>
-                        <SelectItem value="price-low">Price: Low to High</SelectItem>
-                        <SelectItem value="price-high">Price: High to Low</SelectItem>
+                        <SelectItem value="price-low">
+                          Price: Low to High
+                        </SelectItem>
+                        <SelectItem value="price-high">
+                          Price: High to Low
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -424,10 +497,10 @@ export default function ShopPage() {
                         {filter === "under-50"
                           ? "Under $50"
                           : filter === "50-100"
-                            ? "$50 - $100"
-                            : filter === "100-150"
-                              ? "$100 - $150"
-                              : "$150+"}
+                          ? "$50 - $100"
+                          : filter === "100-150"
+                          ? "$100 - $150"
+                          : "$150+"}
                         <X className="h-3 w-3 ml-1" />
                       </Button>
                     ))}
@@ -444,9 +517,12 @@ export default function ShopPage() {
 
                 {filteredProducts.length === 0 ? (
                   <div className="text-center py-8 sm:py-12">
-                    <h3 className="text-lg font-medium mb-2">No products found</h3>
+                    <h3 className="text-lg font-medium mb-2">
+                      No products found
+                    </h3>
                     <p className="text-neutral-600 mb-4 px-4">
-                      No products match your selected filters. Try adjusting your filters or browse our collections.
+                      No products match your selected filters. Try adjusting
+                      your filters or browse our collections.
                     </p>
                     <Button onClick={clearAllFilters}>Clear Filters</Button>
                   </div>
@@ -468,7 +544,12 @@ export default function ShopPage() {
                 {filteredProducts.length > 0 && (
                   <div className="flex justify-center mt-8 sm:mt-12">
                     <div className="flex items-center gap-1 sm:gap-2">
-                      <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10" disabled>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 sm:h-10 sm:w-10"
+                        disabled
+                      >
                         <ChevronDown className="h-4 w-4 rotate-90" />
                       </Button>
                       <Button
@@ -478,16 +559,32 @@ export default function ShopPage() {
                       >
                         1
                       </Button>
-                      <Button variant="outline" size="sm" className="h-8 w-8 sm:h-10 sm:w-10 p-0">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 w-8 sm:h-10 sm:w-10 p-0"
+                      >
                         2
                       </Button>
-                      <Button variant="outline" size="sm" className="h-8 w-8 sm:h-10 sm:w-10 p-0">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 w-8 sm:h-10 sm:w-10 p-0"
+                      >
                         3
                       </Button>
-                      <Button variant="outline" size="sm" className="h-8 w-8 sm:h-10 sm:w-10 p-0">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 w-8 sm:h-10 sm:w-10 p-0"
+                      >
                         4
                       </Button>
-                      <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 sm:h-10 sm:w-10"
+                      >
                         <ChevronDown className="h-4 w-4 -rotate-90" />
                       </Button>
                     </div>
@@ -506,7 +603,8 @@ export default function ShopPage() {
             <div>
               <h3 className="text-lg font-medium mb-4">ESSENCE</h3>
               <p className="text-neutral-400 text-sm">
-                Luxury fragrances for the discerning individual. Crafted with passion and precision.
+                Luxury fragrances for the discerning individual. Crafted with
+                passion and precision.
               </p>
             </div>
             <div>
@@ -518,17 +616,26 @@ export default function ShopPage() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/shop?category=perfumes" className="hover:text-white">
+                  <Link
+                    href="/shop?category=perfumes"
+                    className="hover:text-white"
+                  >
                     Perfumes
                   </Link>
                 </li>
                 <li>
-                  <Link href="/shop?category=body-sprays" className="hover:text-white">
+                  <Link
+                    href="/shop?category=body-sprays"
+                    className="hover:text-white"
+                  >
                     Body Sprays
                   </Link>
                 </li>
                 <li>
-                  <Link href="/shop?category=gift-sets" className="hover:text-white">
+                  <Link
+                    href="/shop?category=gift-sets"
+                    className="hover:text-white"
+                  >
                     Gift Sets
                   </Link>
                 </li>
@@ -575,6 +682,13 @@ export default function ShopPage() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
 
+export default function ShopPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ShopPageContent />
+    </Suspense>
+  );
+}
